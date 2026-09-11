@@ -15,6 +15,7 @@ import type {
   HealthRecord,
   MatchPost,
   MatchReply,
+  Message,
   Order,
   Pet,
   Photo,
@@ -98,6 +99,13 @@ export interface DataSource {
   listMatchReplies(matchId?: string): Promise<MatchReply[]>
   saveMatchReply(reply: MatchReply): Promise<void>
   deleteMatchReply(id: string): Promise<void>
+
+  // ---- 私信 ----
+  /** 与这个用户有关的全部私信（收 + 发），按时间正序 */
+  listMessages(userId: string): Promise<Message[]>
+  saveMessage(message: Message): Promise<void>
+  /** 读完某个人发来的私信：把他的消息标记为已读 */
+  markConversationRead(myId: string, otherId: string): Promise<void>
 
   // ---- 购物车 ----
   listCart(userId: string): Promise<CartItem[]>
@@ -300,6 +308,25 @@ class LocalDataSource implements DataSource {
     return removeOne('matchReplies', id)
   }
 
+  async listMessages(userId: string): Promise<Message[]> {
+    const all = await getAll<Message>('messages')
+    return all
+      .filter((m) => m.fromUserId === userId || m.toUserId === userId)
+      .sort((a, b) => a.createdAt - b.createdAt)
+  }
+
+  async saveMessage(message: Message): Promise<void> {
+    return putOne('messages', message)
+  }
+
+  async markConversationRead(myId: string, otherId: string): Promise<void> {
+    const all = await getAll<Message>('messages')
+    const unread = all.filter(
+      (m) => m.toUserId === myId && m.fromUserId === otherId && !m.read,
+    )
+    await Promise.all(unread.map((m) => putOne('messages', { ...m, read: true })))
+  }
+
   async listCart(userId: string): Promise<CartItem[]> {
     const all = await getAll<CartItem>('cart')
     return all.filter((c) => c.userId === userId)
@@ -397,6 +424,7 @@ export async function resetAllData(): Promise<void> {
         'orders',
         'matches',
         'matchReplies',
+        'messages',
         'meta',
       ] as const
     ).map((s) => clearStore(s)),

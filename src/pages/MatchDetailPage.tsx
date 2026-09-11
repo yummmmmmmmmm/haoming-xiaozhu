@@ -91,6 +91,8 @@ export default function MatchDetailPage() {
   const author = authorOf(match.userId, match.authorName, match.authorAvatar, users)
   const city = matchCityOf(match, users)
   const isMine = currentUser && match.userId === currentUser.id
+  /** 私信只在本机真实账号之间可用（示例社区的邻居还没注册账号） */
+  const canMessage = Boolean(currentUser) && !isMine && users.some((u) => u.id === match.userId)
 
   return (
     <div className="page page--plain" style={{ paddingBottom: 96 }}>
@@ -143,6 +145,15 @@ export default function MatchDetailPage() {
             <span className="fs-13 text-3">💬 {replies.length} 条回复</span>
           </div>
         </div>
+
+        {canMessage ? (
+          <button
+            className="btn btn--ghost btn--block mt-8"
+            onClick={() => navigate(`/messages/${match.userId}`)}
+          >
+            💬 私信 TA
+          </button>
+        ) : null}
       </div>
 
       <div className="section">

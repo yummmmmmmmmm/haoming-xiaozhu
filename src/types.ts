@@ -100,6 +100,17 @@ export interface Comment {
   createdAt: number
 }
 
+/** 私信：用户之间的一对一消息 */
+export interface Message {
+  id: string
+  fromUserId: string
+  toUserId: string
+  content: string
+  /** 收件人是否已读 */
+  read: boolean
+  createdAt: number
+}
+
 /** 本地相猪：一条"给自家猪猪找对象"的帖子 */
 export interface MatchPost {
   id: string

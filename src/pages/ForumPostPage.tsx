@@ -6,7 +6,7 @@ import { Empty, Modal, Sheet, TopBar, relativeTime } from '../components/ui'
 import { data, newId } from '../data/repo'
 import { avatarImage } from '../data/seed'
 import { useApp } from '../store/AppContext'
-import type { Comment, Post, Product } from '../types'
+import type { Comment, Post, Product, User } from '../types'
 
 export default function ForumPostPage() {
   const { id = '' } = useParams()
@@ -23,6 +23,7 @@ export default function ForumPostPage() {
   const [purchased, setPurchased] = useState<Product[]>([])
   const [refProductId, setRefProductId] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
 
   // 只有买过的商品才能被引用
   useEffect(() => {
@@ -53,9 +54,14 @@ export default function ForumPostPage() {
   }, [post, comments])
 
   const load = useCallback(async () => {
-    const [posts, list] = await Promise.all([data.listPosts(), data.listComments(id)])
+    const [posts, list, userList] = await Promise.all([
+      data.listPosts(),
+      data.listComments(id),
+      data.listUsers(),
+    ])
     setPost(posts.find((p) => p.id === id) ?? null)
     setComments(list)
+    setUsers(userList)
   }, [id])
 
   useEffect(() => {
@@ -133,6 +139,9 @@ export default function ForumPostPage() {
 
   const isMine = currentUser && post.userId === currentUser.id
   const refProduct = purchased.find((p) => p.id === refProductId) ?? null
+  /** 私信只在本机真实账号之间可用（示例社区的邻居还没注册账号） */
+  const canMessage = (userId: string | null) =>
+    Boolean(currentUser) && userId !== currentUser?.id && users.some((u) => u.id === userId)
 
   return (
     <div className="page page--plain" style={{ paddingBottom: 116 }}>
@@ -192,6 +201,15 @@ export default function ForumPostPage() {
         <button className="btn btn--soft btn--block mt-12" onClick={() => setDiaryOpen(true)}>
           📔 记入饲养日记
         </button>
+
+        {canMessage(post.userId) ? (
+          <button
+            className="btn btn--ghost btn--block mt-8"
+            onClick={() => navigate(`/messages/${post.userId}`)}
+          >
+            💬 私信作者
+          </button>
+        ) : null}
       </div>
 
       {/* ---------------- 回复区 ---------------- */}
@@ -233,6 +251,14 @@ export default function ForumPostPage() {
                     >
                       回复
                     </button>
+                    {canMessage(c.userId) ? (
+                      <button
+                        className="comment__action"
+                        onClick={() => navigate(`/messages/${c.userId}`)}
+                      >
+                        私信
+                      </button>
+                    ) : null}
                     {currentUser && c.userId === currentUser.id ? (
                       <button className="comment__action" onClick={() => removeComment(c)}>
                         删除

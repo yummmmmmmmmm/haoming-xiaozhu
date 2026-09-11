@@ -1633,3 +1633,77 @@ textarea.input {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* ---------------- 私信 ---------------- */
+.row__badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+
+.chat-row__preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-row__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chat__row--mine {
+  flex-direction: row-reverse;
+}
+
+.chat__bubble {
+  max-width: 74%;
+  padding: 10px 13px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat__bubble--mine {
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #4a3410;
+}
+
+.chat__text {
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat__meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.chat__bubble--mine .chat__meta {
+  color: #8a6a2a;
+}

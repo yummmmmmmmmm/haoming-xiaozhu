@@ -30,6 +30,8 @@ import AccountPage from './pages/AccountPage'
 import MatchesPage from './pages/MatchesPage'
 import MatchNewPage from './pages/MatchNewPage'
 import MatchDetailPage from './pages/MatchDetailPage'
+import MessagesPage from './pages/MessagesPage'
+import ChatPage from './pages/ChatPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { ready, currentUser } = useApp()
@@ -105,6 +107,8 @@ export default function App() {
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/matches/new" element={<MatchNewPage />} />
           <Route path="/matches/:id" element={<MatchDetailPage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/messages/:userId" element={<ChatPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

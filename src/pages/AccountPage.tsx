@@ -5,6 +5,7 @@ import { data, resetAllData } from '../data/repo'
 import { CITY_OPTIONS, avatarImage } from '../data/seed'
 import { useApp } from '../store/AppContext'
 import type { Order, Photo, Post } from '../types'
+import { unreadCount } from '../utils/conversations'
 
 interface GalleryItem {
   key: string
@@ -23,6 +24,7 @@ export default function AccountPage() {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [myPosts, setMyPosts] = useState<Post[]>([])
   const [orders, setOrders] = useState<Order[]>([])
+  const [unread, setUnread] = useState(0)
   const [editOpen, setEditOpen] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
   const [viewing, setViewing] = useState<GalleryItem | null>(null)
@@ -42,10 +44,11 @@ export default function AccountPage() {
       h += (await data.listHealths(pet.id)).length
       d += (await data.listDiaries(pet.id)).length
     }
-    const [photoList, allPosts, orderList] = await Promise.all([
+    const [photoList, allPosts, orderList, msgList] = await Promise.all([
       data.listPhotos(currentUser.id),
       data.listPosts(),
       data.listOrders(currentUser.id),
+      data.listMessages(currentUser.id),
     ])
     setWeightCount(w)
     setBirthCount(b)
@@ -54,6 +57,7 @@ export default function AccountPage() {
     setPhotos(photoList)
     setMyPosts(allPosts.filter((p) => p.userId === currentUser.id))
     setOrders(orderList)
+    setUnread(unreadCount(msgList, currentUser.id))
     await refreshCart()
   }, [currentUser, pets, refreshCart])
 
@@ -245,6 +249,17 @@ export default function AccountPage() {
               <div className="row__title">饲养指南</div>
               <div className="row__sub">随时查阅饲养知识</div>
             </div>
+            <span className="row__action">›</span>
+          </div>
+          <div className="row" onClick={() => navigate('/messages')}>
+            <div className="row__thumb row__thumb--emoji">💬</div>
+            <div className="row__body">
+              <div className="row__title">我的私信</div>
+              <div className="row__sub">
+                {unread > 0 ? `有 ${unread} 条未读消息` : '和猪友一对一聊聊'}
+              </div>
+            </div>
+            {unread > 0 ? <span className="row__badge">{unread}</span> : null}
             <span className="row__action">›</span>
           </div>
           <div className="row" onClick={() => navigate('/matches')}>
