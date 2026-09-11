@@ -19,13 +19,15 @@ export const STORES = [
   'todos',
   'cart',
   'orders',
+  'matches',
+  'matchReplies',
   'meta',
 ] as const
 
 export type StoreName = (typeof STORES)[number]
 
 const DB_NAME = 'haoming-xiaozhu'
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 let dbPromise: Promise<IDBDatabase> | null = null
 

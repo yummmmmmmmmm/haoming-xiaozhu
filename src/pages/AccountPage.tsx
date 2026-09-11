@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Empty, Modal, TopBar } from '../components/ui'
 import { data, resetAllData } from '../data/repo'
-import { avatarImage } from '../data/seed'
+import { CITY_OPTIONS, avatarImage } from '../data/seed'
 import { useApp } from '../store/AppContext'
 import type { Order, Photo, Post } from '../types'
 
@@ -28,6 +28,7 @@ export default function AccountPage() {
   const [viewing, setViewing] = useState<GalleryItem | null>(null)
   const [nickname, setNickname] = useState(currentUser?.nickname ?? '')
   const [signature, setSignature] = useState(currentUser?.signature ?? '')
+  const [city, setCity] = useState(currentUser?.city ?? '')
 
   const load = useCallback(async () => {
     if (!currentUser) return
@@ -87,6 +88,7 @@ export default function AccountPage() {
     await updateProfile({
       nickname: nickname.trim() || currentUser.username,
       signature: signature.trim(),
+      city: city.trim(),
     })
     toast('资料已更新 ✨')
     setEditOpen(false)
@@ -113,7 +115,10 @@ export default function AccountPage() {
           />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, fontWeight: 800 }}>{currentUser.nickname}</div>
-            <div className="fs-12 text-3">@{currentUser.username}</div>
+            <div className="fs-12 text-3">
+              @{currentUser.username}
+              {currentUser.city ? ` · 📍${currentUser.city}` : ''}
+            </div>
             <div className="fs-13 text-2 mt-8">{currentUser.signature || '还没有个性签名'}</div>
           </div>
           <button className="icon-btn" onClick={() => setEditOpen(true)} aria-label="编辑资料">
@@ -242,6 +247,14 @@ export default function AccountPage() {
             </div>
             <span className="row__action">›</span>
           </div>
+          <div className="row" onClick={() => navigate('/matches')}>
+            <div className="row__thumb row__thumb--emoji">💕</div>
+            <div className="row__body">
+              <div className="row__title">本地相猪</div>
+              <div className="row__sub">看看同城猪友，给自家猪猪找对象</div>
+            </div>
+            <span className="row__action">›</span>
+          </div>
           <div className="row" onClick={() => setResetOpen(true)}>
             <div className="row__thumb row__thumb--emoji">🧹</div>
             <div className="row__body">
@@ -281,6 +294,20 @@ export default function AccountPage() {
             onChange={(e) => setSignature(e.target.value)}
             placeholder="说点什么"
           />
+        </div>
+        <div className="field">
+          <label className="field__label">所在城市（用于本地相猪的同城匹配）</label>
+          <div className="chips">
+            {CITY_OPTIONS.map((c) => (
+              <button
+                key={c}
+                className={`chip${city === c ? ' chip--on' : ''}`}
+                onClick={() => setCity(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="modal__actions">
           <button className="btn btn--ghost" onClick={() => setEditOpen(false)}>

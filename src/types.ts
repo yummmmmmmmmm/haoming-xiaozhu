@@ -12,6 +12,8 @@ export interface User {
   nickname: string
   avatar: string
   signature: string
+  /** 所在城市（用于「本地相猪」的同城匹配），未填写时为空串 */
+  city?: string
   createdAt: number
 }
 
@@ -95,6 +97,37 @@ export interface Comment {
   productId?: string
   replyToId: string | null
   replyToName: string
+  createdAt: number
+}
+
+/** 本地相猪：一条"给自家猪猪找对象"的帖子 */
+export interface MatchPost {
+  id: string
+  /** 发布者。展示时优先按 id 读用户表的昵称与头像，读不到再用下面的快照 */
+  userId: string
+  authorName: string
+  authorAvatar: string
+  /** 发布时所在城市 */
+  city: string
+  /** 出镜的自家猪猪（档案可能被删，所以另存一份快照） */
+  petId: string | null
+  petName: string
+  petAvatar: string
+  petGender: '公' | '母' | '未知'
+  breed: string
+  /** 择偶要求 */
+  requirement: string
+  createdAt: number
+}
+
+/** 本地相猪：猪友之间的回复 */
+export interface MatchReply {
+  id: string
+  matchId: string
+  userId: string | null
+  authorName: string
+  authorAvatar: string
+  content: string
   createdAt: number
 }
 

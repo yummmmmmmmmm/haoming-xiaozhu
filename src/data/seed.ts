@@ -4,7 +4,16 @@
 // 后续想换真实内容/图片，只要改这里即可（或接云端后从接口拉取）。
 // ============================================================
 
-import type { Comment, GuideArticle, GuideCategory, Post, Product, Slide } from '../types'
+import type {
+  Comment,
+  GuideArticle,
+  GuideCategory,
+  MatchPost,
+  MatchReply,
+  Post,
+  Product,
+  Slide,
+} from '../types'
 
 // ---------- 占位图生成（纯本地 SVG，不联网） ----------
 interface SvgOpts {
@@ -867,4 +876,115 @@ export const COLOR_OPTIONS = [
   '奶油',
   '巧克力',
   '灰色',
+]
+
+// ---------- 本地相猪 ----------
+/** 编辑资料 / 发布相亲帖时可选的同城城市 */
+export const CITY_OPTIONS = [
+  '北京',
+  '上海',
+  '广州',
+  '深圳',
+  '杭州',
+  '成都',
+  '武汉',
+  '西安',
+  '南京',
+  '重庆',
+  '其他',
+]
+
+/**
+ * 本地相猪的示例相亲帖。
+ * 这些是"本机示例社区"里的邻居，userId 不对应真实账号，
+ * 展示时按用户表读不到就回落到这里的昵称/头像快照。
+ */
+export const SEED_MATCHES: MatchPost[] = [
+  {
+    id: 'm1',
+    userId: 'demo-u1',
+    authorName: '圆圆妈',
+    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    city: '杭州',
+    petId: null,
+    petName: '圆圆',
+    petAvatar: petAvatar('🐹'),
+    petGender: '母',
+    breed: '冠毛',
+    requirement: '杭州本地找一只性格温顺的公猪，6 个月以上、体重 700g+，可以先视频看猪再约见。',
+    createdAt: Date.now() - 1000 * 60 * 42,
+  },
+  {
+    id: 'm2',
+    userId: 'demo-u2',
+    authorName: '草草爹',
+    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    city: '杭州',
+    petId: null,
+    petName: '草草',
+    petAvatar: petAvatar('🐖'),
+    petGender: '公',
+    breed: '美国短毛',
+    requirement: '想给家里的公猪找个伴，希望对方也是杭州同城、健康爱吃提摩西的母猪。',
+    createdAt: Date.now() - 1000 * 60 * 60 * 5,
+  },
+  {
+    id: 'm3',
+    userId: 'demo-u3',
+    authorName: '奶茶麻麻',
+    authorAvatar: avatarImage('🧋', '#F3E4D0', '#B98A54'),
+    city: '上海',
+    petId: null,
+    petName: '奶茶',
+    petAvatar: petAvatar('🐹'),
+    petGender: '母',
+    breed: '泰迪',
+    requirement: '上海同城，要求对方无皮肤病、无呼吸道病史，毛色不限。',
+    createdAt: Date.now() - 1000 * 60 * 60 * 26,
+  },
+  {
+    id: 'm4',
+    userId: 'demo-u4',
+    authorName: '三花爸爸',
+    authorAvatar: avatarImage('🌸', '#FBE0E8', '#E88FA8'),
+    city: '成都',
+    petId: null,
+    petName: '三花',
+    petAvatar: petAvatar('🐹'),
+    petGender: '母',
+    breed: '三花',
+    requirement: '成都本地，希望找一只成年公猪，配种经验丰富更好。',
+    createdAt: Date.now() - 1000 * 60 * 60 * 50,
+  },
+]
+
+/** 本地相猪的示例回复 */
+export const SEED_MATCH_REPLIES: MatchReply[] = [
+  {
+    id: 'mr1',
+    matchId: 'm1',
+    userId: null,
+    authorName: '草草爹',
+    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    content: '我家草草 8 个月、760g，也算杭州本地，要不要先加个联系方式聊聊？',
+    createdAt: Date.now() - 1000 * 60 * 30,
+  },
+  {
+    id: 'mr2',
+    matchId: 'm1',
+    userId: null,
+    authorName: '圆圆妈',
+    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    content: '可以的～先互看一下猪猪的照片吧 📷',
+    createdAt: Date.now() - 1000 * 60 * 12,
+  },
+  {
+    id: 'mr3',
+    matchId: 'm3',
+    userId: null,
+    authorName: '提摩西头茬控',
+    authorAvatar: avatarImage('🥕', '#FFE7C2', '#E9A23B'),
+    content: '上海哪一片呀？我在徐汇，可以周末约个公园见。',
+    createdAt: Date.now() - 1000 * 60 * 60 * 20,
+  },
 ]

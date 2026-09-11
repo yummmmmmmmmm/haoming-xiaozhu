@@ -27,6 +27,9 @@ import DiaryPage from './pages/DiaryPage'
 import TodoPage from './pages/TodoPage'
 import AlbumPage from './pages/AlbumPage'
 import AccountPage from './pages/AccountPage'
+import MatchesPage from './pages/MatchesPage'
+import MatchNewPage from './pages/MatchNewPage'
+import MatchDetailPage from './pages/MatchDetailPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { ready, currentUser } = useApp()
@@ -99,6 +102,9 @@ export default function App() {
           <Route path="/record/diary" element={<DiaryPage />} />
           <Route path="/record/todo" element={<TodoPage />} />
           <Route path="/album" element={<AlbumPage />} />
+          <Route path="/matches" element={<MatchesPage />} />
+          <Route path="/matches/new" element={<MatchNewPage />} />
+          <Route path="/matches/:id" element={<MatchDetailPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

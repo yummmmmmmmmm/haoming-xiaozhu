@@ -25,6 +25,7 @@ export async function resetStore(): Promise<void> {
 export async function seedUser(
   username = QA_USERNAME,
   password = QA_PASSWORD,
+  patch: Partial<User> = {},
 ): Promise<User> {
   const user: User = {
     id: newId('u'),
@@ -33,7 +34,9 @@ export async function seedUser(
     nickname: username,
     avatar: '',
     signature: '',
+    city: '',
     createdAt: Date.now(),
+    ...patch,
   }
   await data.saveUser(user)
   return user
@@ -106,26 +109,38 @@ function AutoLogin({
   children,
   username,
   password,
+  patch,
 }: {
   children: ReactNode
   username: string
   password: string
+  patch?: Partial<Pick<User, 'nickname' | 'signature' | 'avatar' | 'city'>>
 }) {
-  const { ready, currentUser, login } = useApp()
+  const { ready, currentUser, login, updateProfile } = useApp()
   const [loggedOnce, setLoggedOnce] = useState(false)
   useEffect(() => {
     if (loggedOnce || !ready || currentUser) return
     void login(username, password)
-      .then(() => setLoggedOnce(true))
+      .then(async () => {
+        if (patch) await updateProfile(patch)
+        setLoggedOnce(true)
+      })
       .catch(() => undefined)
-  }, [loggedOnce, ready, currentUser, login, username, password])
-  if (!loggedOnce && !currentUser) return <div className="loading">{LOADING_TEXT}</div>
+  }, [loggedOnce, ready, currentUser, login, username, password, patch, updateProfile])
+  // 首次登录（含资料补丁）完成前保持加载态，避免用例抢跑
+  if (!loggedOnce) return <div className="loading">{LOADING_TEXT}</div>
   return <>{children}</>
 }
 
 export async function renderApp(
   path: string,
-  options: { authed?: boolean; username?: string; password?: string } = {},
+  options: {
+    authed?: boolean
+    username?: string
+    password?: string
+    /** 登录后立即写入的资料补丁，例如 { city: '杭州' } */
+    userPatch?: Partial<Pick<User, 'nickname' | 'signature' | 'avatar' | 'city'>>
+  } = {},
 ): Promise<RenderResult> {
   const authed = options.authed ?? true
   const result = render(
@@ -134,6 +149,7 @@ export async function renderApp(
         <AutoLogin
           username={options.username ?? QA_USERNAME}
           password={options.password ?? QA_PASSWORD}
+          patch={options.userPatch}
         >
           <App />
         </AutoLogin>

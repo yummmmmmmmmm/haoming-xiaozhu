@@ -22,6 +22,14 @@ export default function GuideCategoryPage() {
         ) : null}
       </div>
 
+      {catId === 'breeding' ? (
+        <div className="section">
+          <button className="btn btn--primary btn--block" onClick={() => navigate('/matches')}>
+            💕 去「本地相猪」看看同城的猪猪 ›
+          </button>
+        </div>
+      ) : null}
+
       {articles.length === 0 ? (
         <Empty icon="📄" text="这个分类还没有文章" />
       ) : (

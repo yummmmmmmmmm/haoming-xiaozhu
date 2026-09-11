@@ -13,6 +13,8 @@ import type {
   Comment,
   DiaryRecord,
   HealthRecord,
+  MatchPost,
+  MatchReply,
   Order,
   Pet,
   Photo,
@@ -31,7 +33,7 @@ import {
   today,
   uid,
 } from './db'
-import { SEED_COMMENTS, SEED_POSTS } from './seed'
+import { SEED_COMMENTS, SEED_MATCHES, SEED_MATCH_REPLIES, SEED_POSTS } from './seed'
 
 export interface DataSource {
   // ---- 账号 ----
@@ -84,6 +86,18 @@ export interface DataSource {
   listComments(postId?: string): Promise<Comment[]>
   saveComment(comment: Comment): Promise<void>
   deleteComment(id: string): Promise<void>
+
+  // ---- 本地相猪 ----
+  /** 全部相亲帖（新的在前）。同城筛选由调用方按 city / 用户表判断 */
+  listMatches(): Promise<MatchPost[]>
+  saveMatch(match: MatchPost): Promise<void>
+  /** 删帖时把它的回复一起清掉 */
+  deleteMatch(id: string): Promise<void>
+
+  /** 不传 matchId 表示取全部（用于统计每条相亲帖的回复数） */
+  listMatchReplies(matchId?: string): Promise<MatchReply[]>
+  saveMatchReply(reply: MatchReply): Promise<void>
+  deleteMatchReply(id: string): Promise<void>
 
   // ---- 购物车 ----
   listCart(userId: string): Promise<CartItem[]>
@@ -256,6 +270,36 @@ class LocalDataSource implements DataSource {
     return removeOne('comments', id)
   }
 
+  async listMatches(): Promise<MatchPost[]> {
+    return byCreatedDesc(await getAll<MatchPost>('matches'))
+  }
+
+  async saveMatch(match: MatchPost): Promise<void> {
+    return putOne('matches', match)
+  }
+
+  async deleteMatch(id: string): Promise<void> {
+    const replies = await getAll<MatchReply>('matchReplies')
+    await Promise.all([
+      removeOne('matches', id),
+      ...replies.filter((r) => r.matchId === id).map((r) => removeOne('matchReplies', r.id)),
+    ])
+  }
+
+  async listMatchReplies(matchId?: string): Promise<MatchReply[]> {
+    const all = await getAll<MatchReply>('matchReplies')
+    const list = matchId ? all.filter((r) => r.matchId === matchId) : all
+    return [...list].sort((a, b) => a.createdAt - b.createdAt)
+  }
+
+  async saveMatchReply(reply: MatchReply): Promise<void> {
+    return putOne('matchReplies', reply)
+  }
+
+  async deleteMatchReply(id: string): Promise<void> {
+    return removeOne('matchReplies', id)
+  }
+
   async listCart(userId: string): Promise<CartItem[]> {
     const all = await getAll<CartItem>('cart')
     return all.filter((c) => c.userId === userId)
@@ -292,6 +336,8 @@ export const data: DataSource = new LocalDataSource()
 // ============================================================
 const SEED_FLAG = 'seed'
 const SEED_COMMENT_FLAG = 'seed-comments'
+const SEED_MATCH_FLAG = 'seed-matches'
+const SEED_MATCH_REPLY_FLAG = 'seed-match-replies'
 
 export async function ensureSeedData(): Promise<void> {
   const flag = await getOne<{ id: string; value: boolean }>('meta', SEED_FLAG)
@@ -303,6 +349,19 @@ export async function ensureSeedData(): Promise<void> {
   if (!commentFlag?.value) {
     await putMany('comments', SEED_COMMENTS)
     await putOne('meta', { id: SEED_COMMENT_FLAG, value: true })
+  }
+  const matchFlag = await getOne<{ id: string; value: boolean }>('meta', SEED_MATCH_FLAG)
+  if (!matchFlag?.value) {
+    await putMany('matches', SEED_MATCHES)
+    await putOne('meta', { id: SEED_MATCH_FLAG, value: true })
+  }
+  const matchReplyFlag = await getOne<{ id: string; value: boolean }>(
+    'meta',
+    SEED_MATCH_REPLY_FLAG,
+  )
+  if (!matchReplyFlag?.value) {
+    await putMany('matchReplies', SEED_MATCH_REPLIES)
+    await putOne('meta', { id: SEED_MATCH_REPLY_FLAG, value: true })
   }
 }
 
@@ -336,6 +395,8 @@ export async function resetAllData(): Promise<void> {
         'todos',
         'cart',
         'orders',
+        'matches',
+        'matchReplies',
         'meta',
       ] as const
     ).map((s) => clearStore(s)),

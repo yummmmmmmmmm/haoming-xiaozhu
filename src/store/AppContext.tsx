@@ -20,7 +20,9 @@ interface AppContextValue {
   currentUser: User | null
   login: (username: string, password: string) => Promise<void>
   register: (username: string, password: string) => Promise<void>
-  updateProfile: (patch: Partial<Pick<User, 'nickname' | 'signature' | 'avatar'>>) => Promise<void>
+  updateProfile: (
+    patch: Partial<Pick<User, 'nickname' | 'signature' | 'avatar' | 'city'>>,
+  ) => Promise<void>
   logout: () => void
   pets: Pet[]
   refreshPets: () => Promise<void>
@@ -115,6 +117,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       nickname: name,
       avatar: '',
       signature: '我和我的猪猪们 🐹',
+      city: '',
       createdAt: Date.now(),
     }
     await data.saveUser(user)
@@ -122,7 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updateProfile = useCallback(
-    async (patch: Partial<Pick<User, 'nickname' | 'signature' | 'avatar'>>) => {
+    async (patch: Partial<Pick<User, 'nickname' | 'signature' | 'avatar' | 'city'>>) => {
       if (!currentUser) return
       const next: User = { ...currentUser, ...patch }
       await data.saveUser(next)
