@@ -76,6 +76,8 @@ export interface Post {
   content: string
   images: string[]
   topic: string
+  /** 引用的已购商品 id：评论区的用户能看到并跳转到商城详情 */
+  productId?: string
   likes: number
   liked: boolean
   createdAt: number
@@ -89,6 +91,8 @@ export interface Comment {
   authorName: string
   authorAvatar: string
   content: string
+  /** 回复里引用的已购商品 id：其他用户可见并可跳转商城 */
+  productId?: string
   replyToId: string | null
   replyToName: string
   createdAt: number

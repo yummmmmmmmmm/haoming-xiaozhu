@@ -1,4 +1,5 @@
 import type { Post } from '../types'
+import { ProductRef } from './ProductRef'
 import { relativeTime } from './ui'
 
 export function PostCard({
@@ -40,6 +41,12 @@ export function PostCard({
           {post.images.map((img, i) => (
             <img src={img} alt={`配图 ${i + 1}`} key={i} />
           ))}
+        </div>
+      ) : null}
+
+      {post.productId ? (
+        <div className="mt-8">
+          <ProductRef productId={post.productId} />
         </div>
       ) : null}
 

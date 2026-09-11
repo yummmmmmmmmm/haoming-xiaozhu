@@ -1,10 +1,11 @@
-import { useState, type ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ProductRef, ProductRefPicker, purchasedProducts } from '../components/ProductRef'
 import { TopBar } from '../components/ui'
 import { data, newId } from '../data/repo'
 import { POST_TOPICS, avatarImage } from '../data/seed'
 import { useApp } from '../store/AppContext'
-import type { Post } from '../types'
+import type { Post, Product } from '../types'
 import { fileToCompressedDataUrl } from '../utils/image'
 
 export default function ForumNewPage() {
@@ -13,7 +14,24 @@ export default function ForumNewPage() {
   const [content, setContent] = useState('')
   const [topic, setTopic] = useState(POST_TOPICS[0])
   const [images, setImages] = useState<string[]>([])
+  const [purchased, setPurchased] = useState<Product[]>([])
+  const [refProductId, setRefProductId] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // 只能引用"自己在商城买过"的商品
+  useEffect(() => {
+    if (!currentUser) return
+    let alive = true
+    data
+      .listOrders(currentUser.id)
+      .then((orders) => {
+        if (alive) setPurchased(purchasedProducts(orders))
+      })
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [currentUser])
 
   const onPickImages = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
@@ -42,6 +60,7 @@ export default function ForumNewPage() {
         content: content.trim(),
         images,
         topic,
+        productId: refProductId || undefined,
         likes: 0,
         liked: false,
         createdAt: Date.now(),
@@ -131,6 +150,28 @@ export default function ForumNewPage() {
               </label>
             ) : null}
           </div>
+        </div>
+
+        <div className="field">
+          <label className="field__label">引用已购商品（可选）</label>
+          {purchased.length === 0 ? (
+            <div className="fs-12 text-3">
+              还没有购买记录，去商城下单后就能在帖子里引用商品链接啦
+            </div>
+          ) : (
+            <>
+              <ProductRefPicker
+                items={purchased}
+                value={refProductId}
+                onChange={setRefProductId}
+              />
+              {refProductId ? (
+                <div className="mt-8">
+                  <ProductRef productId={refProductId} />
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
 
         <button

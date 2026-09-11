@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DiaryQuickAdd } from '../components/DiaryQuickAdd'
-import { Empty, Modal, TopBar, relativeTime } from '../components/ui'
+import { ProductRef, ProductRefPicker, purchasedProducts } from '../components/ProductRef'
+import { Empty, Modal, Sheet, TopBar, relativeTime } from '../components/ui'
 import { data, newId } from '../data/repo'
 import { avatarImage } from '../data/seed'
 import { useApp } from '../store/AppContext'
-import type { Comment, Post } from '../types'
+import type { Comment, Post, Product } from '../types'
 
 export default function ForumPostPage() {
   const { id = '' } = useParams()
@@ -19,6 +20,24 @@ export default function ForumPostPage() {
   const [replyTo, setReplyTo] = useState<Comment | null>(null)
   const [busy, setBusy] = useState(false)
   const [diaryOpen, setDiaryOpen] = useState(false)
+  const [purchased, setPurchased] = useState<Product[]>([])
+  const [refProductId, setRefProductId] = useState('')
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  // 只有买过的商品才能被引用
+  useEffect(() => {
+    if (!currentUser) return
+    let alive = true
+    data
+      .listOrders(currentUser.id)
+      .then((orders) => {
+        if (alive) setPurchased(purchasedProducts(orders))
+      })
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [currentUser])
 
   /** 把帖子和前几条回复摘成一段可以存进饲养日记的文字 */
   const diaryDraft = useMemo(() => {
@@ -79,6 +98,7 @@ export default function ForumPostPage() {
         authorName: currentUser.nickname,
         authorAvatar: currentUser.avatar || avatarImage('🐹', '#FFE0B2', '#FF9A62'),
         content,
+        productId: refProductId || undefined,
         replyToId: replyTo?.id ?? null,
         replyToName: replyTo?.authorName ?? '',
         createdAt: Date.now(),
@@ -86,6 +106,7 @@ export default function ForumPostPage() {
       await data.saveComment(comment)
       setText('')
       setReplyTo(null)
+      setRefProductId('')
       await load()
       toast('回复成功 💬')
     } finally {
@@ -111,6 +132,7 @@ export default function ForumPostPage() {
   }
 
   const isMine = currentUser && post.userId === currentUser.id
+  const refProduct = purchased.find((p) => p.id === refProductId) ?? null
 
   return (
     <div className="page page--plain" style={{ paddingBottom: 116 }}>
@@ -147,6 +169,12 @@ export default function ForumPostPage() {
               {post.images.map((img, i) => (
                 <img src={img} alt={`配图 ${i + 1}`} key={i} />
               ))}
+            </div>
+          ) : null}
+
+          {post.productId ? (
+            <div className="mt-12">
+              <ProductRef productId={post.productId} />
             </div>
           ) : null}
 
@@ -190,6 +218,11 @@ export default function ForumPostPage() {
                     ) : null}
                     {c.content}
                   </div>
+                  {c.productId ? (
+                    <div className="mt-8">
+                      <ProductRef productId={c.productId} />
+                    </div>
+                  ) : null}
                   <div className="comment__actions">
                     <button
                       className="comment__action"
@@ -225,7 +258,21 @@ export default function ForumPostPage() {
             <button onClick={() => setReplyTo(null)}>取消</button>
           </div>
         ) : null}
+        {refProduct ? (
+          <div className="comment-bar__reply">
+            🛍️ 引用商品：{refProduct.name}
+            <button onClick={() => setRefProductId('')}>取消引用</button>
+          </div>
+        ) : null}
         <div className="comment-bar__row">
+          <button
+            className="icon-btn"
+            aria-label="引用已购商品"
+            onClick={() => setPickerOpen(true)}
+            style={{ width: 40, height: 40, flexShrink: 0 }}
+          >
+            🛍️
+          </button>
           <input
             className="input comment-bar__input"
             value={text}
@@ -240,6 +287,23 @@ export default function ForumPostPage() {
           </button>
         </div>
       </div>
+
+      <Sheet open={pickerOpen} onClose={() => setPickerOpen(false)}>
+        <div className="sheet__title">引用已购商品</div>
+        <div className="sheet__sub">只能引用自己在商城买到的商品</div>
+        {purchased.length === 0 ? (
+          <Empty icon="🛍️" text="还没有购买记录，先去商城逛逛吧" />
+        ) : (
+          <ProductRefPicker
+            items={purchased}
+            value={refProductId}
+            onChange={(pid) => {
+              setRefProductId(pid)
+              setPickerOpen(false)
+            }}
+          />
+        )}
+      </Sheet>
 
       <Modal open={confirmDel} onClose={() => setConfirmDel(false)} title="删除这条帖子？">
         <div className="fs-13 text-2" style={{ textAlign: 'center' }}>
