@@ -26,24 +26,44 @@ interface SvgOpts {
   radius?: number
 }
 
+/**
+ * 把任意颜色往「燕麦白」方向混，压低饱和度。
+ * 全站配色只在低饱和的粉 / 黄 / 棕 / 白之间游走，
+ * 占位图无论传进来什么颜色，都会被统一收进这个基调里。
+ */
+function soften(hex: string): string {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
+  if (!m) return hex
+  const n = parseInt(m[1], 16)
+  const oat = [251, 248, 244]
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+  const mix = ch.map((c, i) => Math.round(c + (oat[i] - c) * 0.28))
+  return `#${mix.map((v) => v.toString(16).padStart(2, '0')).join('')}`
+}
+
 function svgImage({
   w = 600,
   h = 600,
-  from = '#FFE7A8',
-  to = '#F0B429',
+  from = '#f8ead4',
+  to = '#d2a468',
   emoji = '🐹',
   label = '',
   radius = 0,
 }: SvgOpts = {}): string {
-  const fontSize = Math.round(Math.min(w, h) * 0.34)
-  const labelFont = Math.round(Math.min(w, h) * 0.075)
+  // 占位图统一压一层燕麦色。
+  // 原来的「高饱和渐变 + 占满画面 34% 的巨大 emoji」贴纸感太重，
+  // 叠一层半透明底色后，所有占位图会落到同一个低饱和基调上，
+  // 巨型 emoji 退成隐约的水印。等 design-input 放进真实照片后会被整体替换。
+  const glyphFont = Math.round(Math.min(w, h) * 0.2)
+  const labelFont = Math.round(Math.min(w, h) * 0.052)
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0%" stop-color="${from}"/><stop offset="100%" stop-color="${to}"/>
+ <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="${soften(from)}"/><stop offset="100%" stop-color="${soften(to)}"/>
   </linearGradient></defs>
   <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" fill="url(#g)"/>
-  <text x="50%" y="50%" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central">${emoji}</text>
-  ${label ? `<text x="50%" y="${Math.round(h * 0.86)}" font-size="${labelFont}" fill="#ffffff" text-anchor="middle" font-family="sans-serif">${label}</text>` : ''}
+  <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" fill="#faf7f2" opacity="0.56"/>
+  <text x="50%" y="50%" font-size="${glyphFont}" text-anchor="middle" dominant-baseline="central" opacity="0.55">${emoji}</text>
+  ${label ? `<text x="50%" y="${Math.round(h * 0.84)}" font-size="${labelFont}" fill="#6e655b" letter-spacing="3" text-anchor="middle" font-family="sans-serif" opacity="0.7">${label}</text>` : ''}
 </svg>`
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
@@ -53,17 +73,17 @@ export function avatarImage(emoji: string, from: string, to: string): string {
 }
 
 export function petAvatar(emoji = '🐹'): string {
-  return svgImage({ w: 300, h: 300, emoji, from: '#FFE9BE', to: '#E0A868', radius: 24 })
+  return svgImage({ w: 300, h: 300, emoji, from: '#f8ead4', to: '#d2a468', radius: 24 })
 }
 
 // ---------- 饲养指南 ----------
 export const GUIDE_CATEGORIES: GuideCategory[] = [
-  { id: 'start', name: '新手必看', icon: '🐣', desc: '刚接回家要做什么', color: '#F0B429' },
-  { id: 'food', name: '饮食营养', icon: '🥕', desc: '吃什么、吃多少', color: '#9BC15A' },
-  { id: 'house', name: '笼舍环境', icon: '🏠', desc: '住得舒服才健康', color: '#D9A97F' },
-  { id: 'care', name: '日常护理', icon: '🛁', desc: '洗澡、剪甲、梳毛', color: '#E4A0B7' },
-  { id: 'social', name: '猪猪互动', icon: '🤝', desc: '看懂它的小情绪', color: '#E9A23B' },
-  { id: 'breeding', name: '本地相猪', icon: '💕', desc: '同城找对象、配种须知', color: '#E88FA8' },
+  { id: 'start', name: '新手必看', icon: '🐣', desc: '刚接回家要做什么', color: '#c69a63' },
+  { id: 'food', name: '饮食营养', icon: '🥕', desc: '吃什么、吃多少', color: '#93a882' },
+  { id: 'house', name: '笼舍环境', icon: '🏠', desc: '住得舒服才健康', color: '#c0a184' },
+  { id: 'care', name: '日常护理', icon: '🛁', desc: '洗澡、剪甲、梳毛', color: '#c98f9c' },
+  { id: 'social', name: '猪猪互动', icon: '🤝', desc: '看懂它的小情绪', color: '#bda06a' },
+  { id: 'breeding', name: '本地相猪', icon: '💕', desc: '同城找对象、配种须知', color: '#cf9fae' },
 ]
 
 export const GUIDE_ARTICLES: GuideArticle[] = [
@@ -71,7 +91,7 @@ export const GUIDE_ARTICLES: GuideArticle[] = [
     id: 'g1',
     categoryId: 'start',
     title: '接荷兰猪回家第一天，先做这 5 件事',
-    cover: svgImage({ w: 800, h: 600, emoji: '🏡', from: '#FFE0B2', to: '#FF9A62', label: '第一天' }),
+    cover: svgImage({ w: 800, h: 600, emoji: '🏡', from: '#f8ead4', to: '#d2a468', label: '第一天' }),
     summary: '换环境会让荷兰猪紧张，第一天最重要的是让它安静适应。',
     content: [
       '荷兰猪是极度胆小的动物，刚到新环境会躲起来、不吃不喝，这是正常现象，一般来说 1-2 天就会缓解。',
@@ -92,7 +112,7 @@ export const GUIDE_ARTICLES: GuideArticle[] = [
     id: 'g2',
     categoryId: 'start',
     title: '荷兰猪的花销清单：每月到底要花多少钱',
-    cover: svgImage({ w: 800, h: 600, emoji: '🧾', from: '#FFE0B2', to: '#FF9A62', label: '花销' }),
+    cover: svgImage({ w: 800, h: 600, emoji: '🧾', from: '#f8ead4', to: '#d2a468', label: '花销' }),
     summary: '一次性投入和每月固定开销分别有哪些，新手心里要有数。',
     content: [
       '养荷兰猪不算贵，但也不是零成本。把开销分成"一次性"和"每月"两类会更好规划。',
@@ -632,11 +652,11 @@ export const SEED_POSTS: Post[] = [
     id: 'p1',
     userId: null,
     authorName: '毛毛妈',
-    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    authorAvatar: avatarImage('🐹', '#f8ead4', '#d2a468'),
     content:
       '毛毛今天满半岁啦！从巴掌大养到现在胖乎乎的，实打实涨了 700 克。附上今天的生日照，它盯着胡萝卜蛋糕看了好久（当然蛋糕是我的）。',
     images: [
-      svgImage({ w: 800, h: 600, emoji: '🎂', from: '#FFE0B2', to: '#FF9A62', label: '毛毛的半岁生日' }),
+      svgImage({ w: 800, h: 600, emoji: '🎂', from: '#f8ead4', to: '#d2a468', label: '毛毛的半岁生日' }),
       svgImage({ w: 800, h: 600, emoji: '🥕', from: '#CDECC4', to: '#5FB865', label: '盯蛋糕' }),
     ],
     topic: '晒猪日常',
@@ -648,7 +668,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p2',
     userId: null,
     authorName: '猪猪洗护日记',
-    authorAvatar: avatarImage('🛁', '#D8D2F2', '#8E7CD8'),
+    authorAvatar: avatarImage('🛁', '#eee9f4', '#a99abd'),
     content:
       '第一次给猪猪洗澡，全程紧张到不行。经验总结：水温一定别高，洗完必须吹到彻底干，不然真的会感冒！吹干后它自己在那儿蹦跶，可能是在嫌弃新味道。',
     images: [svgImage({ w: 800, h: 600, emoji: '🛁', from: '#D8D2F2', to: '#8E7CD8', label: '洗澡日' })],
@@ -661,7 +681,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p3',
     userId: null,
     authorName: '干草自由派',
-    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    authorAvatar: avatarImage('🌾', '#eaf0e0', '#9aae86'),
     content:
       '换了三次草终于找到我家猪爱吃的头茬提摩西，香味真的很明显。提醒大家：草一定要无限量，我以前的量给少了，牙齿都长出小问题。',
     images: [svgImage({ w: 800, h: 600, emoji: '🌾', from: '#E4F2C8', to: '#8FBF4A', label: '头茬提摩西' })],
@@ -674,7 +694,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p4',
     userId: null,
     authorName: '两只小猪的日常',
-    authorAvatar: avatarImage('👯', '#FFF3D0', '#F4B942'),
+    authorAvatar: avatarImage('👯', '#f9efd8', '#dcb874'),
     content:
       '成功合笼第 10 天！母+母组合，前三天分开隔离互相看，之后在中立区域见面，现在已经开始挤在一起睡觉了。多准备一套食盆和躲避屋真的很重要。',
     images: [
@@ -690,7 +710,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p5',
     userId: null,
     authorName: '急！在线等',
-    authorAvatar: avatarImage('😰', '#FFCDD2', '#E57373'),
+    authorAvatar: avatarImage('😰', '#f7e0dc', '#c98d86'),
     content:
       '我家猪突然不吃饭了，摸它肚子好像有点硬。已经去查了异宠医院，医生说是肠胃蠕动变慢，灌食+促进蠕动，现在有好转。提醒大家猪不能饿超过 24 小时，真的会出大事。',
     images: [svgImage({ w: 800, h: 600, emoji: '🏥', from: '#FFCDD2', to: '#E57373', label: '就医记录' })],
@@ -703,7 +723,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p6',
     userId: null,
     authorName: '手作铲屎官',
-    authorAvatar: avatarImage('✂️', '#F3E4D0', '#B98A54'),
+    authorAvatar: avatarImage('✂️', '#f4e8d8', '#bf9d72'),
     content:
       '给笼子做了个二层小平台，用的是实木板+防滑垫，猪猪超爱爬上去眺望。记住一定不要用铁丝网做底部，会伤脚掌。',
     images: [svgImage({ w: 800, h: 600, emoji: '🔨', from: '#F3E4D0', to: '#B98A54', label: '自制二层平台' })],
@@ -716,7 +736,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p7',
     userId: null,
     authorName: '体重管理大师',
-    authorAvatar: avatarImage('⚖️', '#DCF1F7', '#3FA9C9'),
+    authorAvatar: avatarImage('⚖️', '#e7eef2', '#93aab8'),
     content:
       '坚持每周称重第 8 周，做了个曲线图，发现它入冬后涨了一点点，属正常范围。建议大家也养成记录习惯，体重突然下降往往是最早的健康预警。',
     images: [svgImage({ w: 800, h: 600, emoji: '📈', from: '#DCF1F7', to: '#3FA9C9', label: '体重曲线' })],
@@ -729,7 +749,7 @@ export const SEED_POSTS: Post[] = [
     id: 'p8',
     userId: null,
     authorName: '甜椒投喂官',
-    authorAvatar: avatarImage('🫑', '#CDECC4', '#5FB865'),
+    authorAvatar: avatarImage('🫑', '#e8efe0', '#93a882'),
     content:
       '每天一小块甜椒，补维 C 又讨喜。注意别给太多水果，糖分高会拉肚子。我家猪一听到开冰箱就疯狂"啾啾"叫，笑死。',
     images: [svgImage({ w: 800, h: 600, emoji: '🫑', from: '#CDECC4', to: '#5FB865', label: '每日甜椒' })],
@@ -749,7 +769,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p1',
     userId: null,
     authorName: '干草自由派',
-    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    authorAvatar: avatarImage('🌾', '#eaf0e0', '#9aae86'),
     content: '半岁快乐！700 克长得真好，我家同期才 620 克 😭',
     replyToId: null,
     replyToName: '',
@@ -760,7 +780,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p1',
     userId: null,
     authorName: '甜椒投喂官',
-    authorAvatar: avatarImage('🫑', '#CDECC4', '#5FB865'),
+    authorAvatar: avatarImage('🫑', '#e8efe0', '#93a882'),
     content: '这个蛋糕它不能吃吧哈哈，注意别让它偷吃奶油',
     replyToId: null,
     replyToName: '',
@@ -771,7 +791,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p1',
     userId: null,
     authorName: '毛毛妈',
-    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    authorAvatar: avatarImage('🐹', '#f8ead4', '#d2a468'),
     content: '放心～完全没给它吃，就是让它在旁边拍了个照 📷',
     replyToId: 'c2',
     replyToName: '甜椒投喂官',
@@ -782,7 +802,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p2',
     userId: null,
     authorName: '急！在线等',
-    authorAvatar: avatarImage('😰', '#FFCDD2', '#E57373'),
+    authorAvatar: avatarImage('😰', '#f7e0dc', '#c98d86'),
     content: '吹干这一步真的要跪强调，我第一次洗没吹透，第二天就打喷嚏了',
     replyToId: null,
     replyToName: '',
@@ -793,7 +813,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p2',
     userId: null,
     authorName: '两只小猪的日常',
-    authorAvatar: avatarImage('👯', '#FFF3D0', '#F4B942'),
+    authorAvatar: avatarImage('👯', '#f9efd8', '#dcb874'),
     content: '想知道用的什么沐浴露？我家的一洗就炸毛',
     replyToId: null,
     replyToName: '',
@@ -804,7 +824,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p3',
     userId: null,
     authorName: '体重管理大师',
-    authorAvatar: avatarImage('⚖️', '#DCF1F7', '#3FA9C9'),
+    authorAvatar: avatarImage('⚖️', '#e7eef2', '#93aab8'),
     content: '头茬是真的香，我换了之后猪猪啃草的频率明显变高了',
     replyToId: null,
     replyToName: '',
@@ -815,7 +835,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p4',
     userId: null,
     authorName: '手作铲屎官',
-    authorAvatar: avatarImage('✂️', '#F3E4D0', '#B98A54'),
+    authorAvatar: avatarImage('✂️', '#f4e8d8', '#bf9d72'),
     content: '恭喜合笼成功！双份躲避屋真的太重要了，我一开始只放了一个，天天打架',
     replyToId: null,
     replyToName: '',
@@ -826,7 +846,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p5',
     userId: null,
     authorName: '干草自由派',
-    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    authorAvatar: avatarImage('🌾', '#eaf0e0', '#9aae86'),
     content: '谢谢分享，看得我立刻去检查了一下食盆。好转就好，祝愿早日康复 🙏',
     replyToId: null,
     replyToName: '',
@@ -837,7 +857,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p6',
     userId: null,
     authorName: '毛毛妈',
-    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    authorAvatar: avatarImage('🐹', '#f8ead4', '#d2a468'),
     content: '请问防滑垫在哪买的？我家那只上坡老是打滑',
     replyToId: null,
     replyToName: '',
@@ -848,7 +868,7 @@ export const SEED_COMMENTS: Comment[] = [
     postId: 'p7',
     userId: null,
     authorName: '猪猪洗护日记',
-    authorAvatar: avatarImage('🛁', '#D8D2F2', '#8E7CD8'),
+    authorAvatar: avatarImage('🛁', '#eee9f4', '#a99abd'),
     content: '看完立刻下单个厨房秤，记录习惯真的很重要',
     replyToId: null,
     replyToName: '',
@@ -904,7 +924,7 @@ export const SEED_MATCHES: MatchPost[] = [
     id: 'm1',
     userId: 'demo-u1',
     authorName: '圆圆妈',
-    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    authorAvatar: avatarImage('🐹', '#f8ead4', '#d2a468'),
     city: '杭州',
     petId: null,
     petName: '圆圆',
@@ -918,7 +938,7 @@ export const SEED_MATCHES: MatchPost[] = [
     id: 'm2',
     userId: 'demo-u2',
     authorName: '草草爹',
-    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    authorAvatar: avatarImage('🌾', '#eaf0e0', '#9aae86'),
     city: '杭州',
     petId: null,
     petName: '草草',
@@ -932,7 +952,7 @@ export const SEED_MATCHES: MatchPost[] = [
     id: 'm3',
     userId: 'demo-u3',
     authorName: '奶茶麻麻',
-    authorAvatar: avatarImage('🧋', '#F3E4D0', '#B98A54'),
+    authorAvatar: avatarImage('🧋', '#f4e8d8', '#bf9d72'),
     city: '上海',
     petId: null,
     petName: '奶茶',
@@ -946,7 +966,7 @@ export const SEED_MATCHES: MatchPost[] = [
     id: 'm4',
     userId: 'demo-u4',
     authorName: '三花爸爸',
-    authorAvatar: avatarImage('🌸', '#FBE0E8', '#E88FA8'),
+    authorAvatar: avatarImage('🌸', '#f8e5e8', '#c98f9c'),
     city: '成都',
     petId: null,
     petName: '三花',
@@ -965,7 +985,7 @@ export const SEED_MATCH_REPLIES: MatchReply[] = [
     matchId: 'm1',
     userId: null,
     authorName: '草草爹',
-    authorAvatar: avatarImage('🌾', '#E4F2C8', '#8FBF4A'),
+    authorAvatar: avatarImage('🌾', '#eaf0e0', '#9aae86'),
     content: '我家草草 8 个月、760g，也算杭州本地，要不要先加个联系方式聊聊？',
     createdAt: Date.now() - 1000 * 60 * 30,
   },
@@ -974,7 +994,7 @@ export const SEED_MATCH_REPLIES: MatchReply[] = [
     matchId: 'm1',
     userId: null,
     authorName: '圆圆妈',
-    authorAvatar: avatarImage('🐹', '#FFE0B2', '#FF9A62'),
+    authorAvatar: avatarImage('🐹', '#f8ead4', '#d2a468'),
     content: '可以的～先互看一下猪猪的照片吧 📷',
     createdAt: Date.now() - 1000 * 60 * 12,
   },
@@ -983,7 +1003,7 @@ export const SEED_MATCH_REPLIES: MatchReply[] = [
     matchId: 'm3',
     userId: null,
     authorName: '提摩西头茬控',
-    authorAvatar: avatarImage('🥕', '#FFE7C2', '#E9A23B'),
+    authorAvatar: avatarImage('🥕', '#f8ead4', '#d2a468'),
     content: '上海哪一片呀？我在徐汇，可以周末约个公园见。',
     createdAt: Date.now() - 1000 * 60 * 60 * 20,
   },

@@ -1,3 +1,18 @@
+import {
+  Bath,
+  BookOpen,
+  Carrot,
+  ChevronRight,
+  Egg,
+  Heart,
+  HeartHandshake,
+  House,
+  MessagesSquare,
+  PenLine,
+  ShoppingBag,
+  ShoppingCart,
+  type LucideIcon,
+} from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Carousel } from '../components/Carousel'
@@ -12,11 +27,32 @@ import type { Comment, Post, Product } from '../types'
 
 type TabKey = 'guide' | 'forum' | 'shop'
 
-const TABS: { key: TabKey; icon: string; label: string }[] = [
-  { key: 'guide', icon: '📖', label: '饲养指南' },
-  { key: 'forum', icon: '💬', label: '论坛分享' },
-  { key: 'shop', icon: '🛒', label: '商城购买' },
+const TABS: { key: TabKey; Icon: LucideIcon; label: string }[] = [
+  { key: 'guide', Icon: BookOpen, label: '饲养指南' },
+  { key: 'forum', Icon: MessagesSquare, label: '论坛分享' },
+  { key: 'shop', Icon: ShoppingBag, label: '商城购买' },
 ]
+
+/**
+ * 分类图标：数据层里存的还是 emoji（guide 分类页等仍在复用），
+ * 首页这一层换成线性图标，避免六个 emoji 把整屏的调子拉低。
+ */
+function categoryIcon(id: string) {
+  switch (id) {
+    case 'start':
+      return <Egg size={21} strokeWidth={1.75} />
+    case 'food':
+      return <Carrot size={21} strokeWidth={1.75} />
+    case 'house':
+      return <House size={21} strokeWidth={1.75} />
+    case 'care':
+      return <Bath size={21} strokeWidth={1.75} />
+    case 'social':
+      return <HeartHandshake size={21} strokeWidth={1.75} />
+    default:
+      return <Heart size={21} strokeWidth={1.75} />
+  }
+}
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -81,7 +117,7 @@ export default function HomePage() {
         right={
           <>
             <button className="icon-btn" onClick={() => navigate('/shop/cart')} aria-label="购物车">
-              🛒
+              <ShoppingCart size={19} strokeWidth={1.75} />
               {cartCount > 0 ? (
                 <span className="icon-btn__badge">{cartCount}</span>
               ) : null}
@@ -105,7 +141,7 @@ export default function HomePage() {
             className={`segmented__item${tab === t.key ? ' segmented__item--on' : ''}`}
             onClick={() => setTab(t.key)}
           >
-            <span>{t.icon}</span>
+            <t.Icon size={16} strokeWidth={1.9} />
             <span>{t.label}</span>
           </button>
         ))}
@@ -129,7 +165,9 @@ export default function HomePage() {
         {tab === 'guide' ? (
           <div className="section">
             <div className="section-head">
-              <div className="section-title">📖 分类指南</div>
+              <div className="section-title">
+                <span className="section-title__glyph">📖</span> 分类指南
+              </div>
               <div className="section-more" onClick={() => navigate('/guide')}>
                 全部 ›
               </div>
@@ -138,12 +176,16 @@ export default function HomePage() {
               {GUIDE_CATEGORIES.map((c) => (
                 <button
                   key={c.id}
-                  className="card"
-                  style={{ padding: '14px 6px', textAlign: 'center' }}
+                  className="card cat-cell"
                   onClick={() => navigate(`/guide/c/${c.id}`)}
                 >
-                  <div style={{ fontSize: 24 }}>{c.icon}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginTop: 6 }}>{c.name}</div>
+                  <span
+                    className="cat-cell__icon"
+                    style={{ background: `${c.color}1f`, color: c.color }}
+                  >
+                    {categoryIcon(c.id)}
+                  </span>
+                  <span className="cat-cell__label">{c.name}</span>
                 </button>
               ))}
             </div>
@@ -152,7 +194,9 @@ export default function HomePage() {
             <SmartDiagnose style={{ marginTop: 14 }} />
 
             <div className="section-head" style={{ marginTop: 18 }}>
-              <div className="section-title">🔥 新手必看</div>
+              <div className="section-title">
+                <span className="section-title__glyph">🔥</span> 新手必看
+              </div>
             </div>
             <div className="list">
               {hotArticles.slice(0, 3).map((a) => (
@@ -162,7 +206,9 @@ export default function HomePage() {
                     <div className="row__title">{a.title}</div>
                     <div className="row__sub">{a.summary}</div>
                   </div>
-                  <span className="row__action">›</span>
+                  <span className="row__action">
+                    <ChevronRight size={16} strokeWidth={2} />
+                  </span>
                 </div>
               ))}
             </div>
@@ -172,7 +218,9 @@ export default function HomePage() {
         {tab === 'forum' ? (
           <div className="section">
             <div className="section-head">
-              <div className="section-title">💬 大家在聊</div>
+              <div className="section-title">
+                <span className="section-title__glyph">💬</span> 大家在聊
+              </div>
               <div className="section-more" onClick={() => navigate('/forum')}>
                 去论坛 ›
               </div>
@@ -189,10 +237,11 @@ export default function HomePage() {
               ))}
             </div>
             <button
-              className="btn btn--primary btn--block mt-12"
+              className="btn btn--primary btn--block btn--icon mt-12"
               onClick={() => navigate('/forum/new')}
             >
-              ✏️ 发一条分享
+              <PenLine size={16} strokeWidth={1.9} />
+              发一条分享
             </button>
           </div>
         ) : null}
@@ -200,7 +249,9 @@ export default function HomePage() {
         {tab === 'shop' ? (
           <div className="section">
             <div className="section-head">
-              <div className="section-title">🛒 好物推荐</div>
+              <div className="section-title">
+                <span className="section-title__glyph">🛒</span> 好物推荐
+              </div>
               <div className="section-more" onClick={() => navigate('/shop')}>
                 去商城 ›
               </div>

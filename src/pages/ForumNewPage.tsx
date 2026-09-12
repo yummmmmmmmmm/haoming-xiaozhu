@@ -122,7 +122,8 @@ export default function ForumNewPage() {
                     width: 24,
                     height: 24,
                     fontSize: 13,
-                    background: 'rgba(0,0,0,.5)',
+                    background: 'rgba(58,46,36,.62)',
+                    backdropFilter: 'blur(8px)',
                     color: '#fff',
                   }}
                   onClick={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}

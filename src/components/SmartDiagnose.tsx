@@ -1,3 +1,4 @@
+import { ChevronRight, Stethoscope } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
 import { Modal } from './ui'
 
@@ -11,12 +12,16 @@ export function SmartDiagnose({ style }: { style?: CSSProperties }) {
   return (
     <>
       <button className="cta-big" style={style} onClick={() => setOpen(true)}>
-        <span className="cta-big__icon">🩺</span>
+        <span className="cta-big__icon">
+          <Stethoscope size={23} strokeWidth={1.75} />
+        </span>
         <span className="cta-big__body">
           <span className="cta-big__title">智能问疾</span>
           <span className="cta-big__sub">描述症状，先做一次初步筛查和建议</span>
         </span>
-        <span className="cta-big__arrow">›</span>
+        <span className="cta-big__arrow">
+          <ChevronRight size={18} strokeWidth={2} />
+        </span>
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} title="智能问疾">

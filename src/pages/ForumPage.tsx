@@ -1,3 +1,4 @@
+import { MessagesSquare, PenLine } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PostCard } from '../components/PostCard'
@@ -48,7 +49,7 @@ export default function ForumPage() {
         title="论坛分享"
         right={
           <button className="icon-btn" onClick={() => navigate('/forum/new')} aria-label="发帖">
-            ✏️
+            <PenLine size={17} strokeWidth={1.75} />
           </button>
         }
       />
@@ -66,7 +67,7 @@ export default function ForumPage() {
       </div>
 
       {visible.length === 0 ? (
-        <Empty icon="💬" text="这个话题下还没有帖子，来发第一条吧" />
+        <Empty icon={<MessagesSquare size={36} strokeWidth={1.4} />} text="这个话题下还没有帖子，来发第一条吧" />
       ) : (
         <div className="list" style={{ marginTop: 14 }}>
           {visible.map((p) => (

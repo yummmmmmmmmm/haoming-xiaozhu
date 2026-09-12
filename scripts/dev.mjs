@@ -3,7 +3,7 @@ import { context } from 'esbuild'
 import { cp, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { startServer } from './server.mjs'
-import { dist, root } from './build.mjs'
+import { copyPublic, dist, root } from './build.mjs'
 
 await mkdir(dist, { recursive: true })
 
@@ -14,6 +14,7 @@ const copyHtmlPlugin = {
     build.onEnd(async (result) => {
       if (result.errors.length > 0) return
       await cp(path.join(root, 'index.html'), path.join(dist, 'index.html'))
+      await copyPublic()
       console.log('  ♻️  已重新构建，刷新浏览器即可看到最新改动')
     })
   },

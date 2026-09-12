@@ -54,29 +54,29 @@ export function LineChart({
     <svg className="chart" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
       <defs>
         <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#F5B71E" stopOpacity="0.34" />
-          <stop offset="100%" stopColor="#F5B71E" stopOpacity="0" />
+          <stop offset="0%" stopColor="#b07d47" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#b07d47" stopOpacity="0" />
         </linearGradient>
       </defs>
       {gridLines.map((g, i) => (
         <g key={i}>
-          <line x1={padL} y1={g.yy} x2={W - padR} y2={g.yy} stroke="#F4E9D2" strokeWidth="1.4" />
-          <text x={padL - 6} y={g.yy + 3} fontSize="9" fill="#B9A794" textAnchor="end">
+          <line x1={padL} y1={g.yy} x2={W - padR} y2={g.yy} stroke="#e7ddd0" strokeWidth="1.4" />
+          <text x={padL - 6} y={g.yy + 3} fontSize="9" fill="#a4988b" textAnchor="end">
             {Math.round(g.v)}
           </text>
         </g>
       ))}
       <path d={area} fill="url(#area)" />
-      <path d={line} fill="none" stroke="#E8A22B" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+      <path d={line} fill="none" stroke="#b07d47" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
       {data.map((d, i) => (
-        <circle key={i} cx={x(i)} cy={y(d.value)} r="3.8" fill="#fff" stroke="#E8A22B" strokeWidth="2.4" />
+        <circle key={i} cx={x(i)} cy={y(d.value)} r="3.8" fill="#fff" stroke="#b07d47" strokeWidth="2.4" />
       ))}
       {labelIndexes.map((i) => (
-        <text key={i} x={x(i)} y={H - 8} fontSize="9" fill="#B9A794" textAnchor="middle">
+        <text key={i} x={x(i)} y={H - 8} fontSize="9" fill="#a4988b" textAnchor="middle">
           {data[i].label}
         </text>
       ))}
-      <text x={padL - 6} y={padT - 6} fontSize="9" fill="#B9A794" textAnchor="end">
+      <text x={padL - 6} y={padT - 6} fontSize="9" fill="#a4988b" textAnchor="end">
         {unit}
       </text>
     </svg>

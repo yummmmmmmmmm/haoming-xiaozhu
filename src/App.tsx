@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
 import { QuickRecordSheet } from './components/QuickRecordSheet'
 import { Toasts } from './components/ui'
@@ -40,6 +40,25 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
+/**
+ * 窗口标题栏。
+ * 这是「桌面壁纸 → 悬浮窗口 → 玻璃控件」三层结构里的第二层顶沿：
+ * 红黄绿三点 + 居中标题，材质与全站玻璃控件同源，
+ * 让整个 App 看起来是一个漂在壁纸上的 macOS 窗口，而不是一块网页。
+ */
+function WindowChrome() {
+  return (
+    <div className="window-chrome" aria-hidden="true">
+      <div className="window-chrome__lights">
+        <span className="window-chrome__light window-chrome__light--close" />
+        <span className="window-chrome__light window-chrome__light--min" />
+        <span className="window-chrome__light window-chrome__light--zoom" />
+      </div>
+      <div className="window-chrome__title">好命小猪 · 荷兰猪科普与社交中心</div>
+    </div>
+  )
+}
+
 /** 带底部导航的页面（主标签页） */
 function TabLayout() {
   const [quickOpen, setQuickOpen] = useState(false)
@@ -61,9 +80,25 @@ function PlainLayout() {
   )
 }
 
+/** 每次换页把悬浮窗口滚回顶部，避免残留上一页的滚动偏移 */
+function ScrollReset() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    // 直接改 scrollTop，而不是 scrollTo：后者在 jsdom 里不存在，
+    // 会让路由用例在换页时抛错。
+    const shell = document.getElementById('root')
+    if (shell) shell.scrollTop = 0
+  }, [pathname])
+
+  return null
+}
+
 export default function App() {
   return (
     <>
+      <ScrollReset />
+
       <Routes>
         <Route path="/login" element={<LoginPage />} />
 

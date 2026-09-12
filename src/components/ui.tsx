@@ -1,5 +1,24 @@
+import { ChevronLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useApp } from '../store/AppContext'
+
+/**
+ * 品牌标记：一只极简的荷兰猪侧脸（耳朵 + 圆头 + 粉鼻）。
+ * 鼻尖用「粉鼻色」点一下，是全站最小的彩蛋之一。
+ */
+function BrandMark() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="6.6" cy="8.2" r="3" fill="currentColor" opacity="0.45" />
+      <circle cx="17.4" cy="8.2" r="3" fill="currentColor" opacity="0.45" />
+      <path
+        d="M12 5.2c4.9 0 8.2 3.1 8.2 7.2 0 4.2-3.4 6.9-8.2 6.9S3.8 16.6 3.8 12.4c0-4.1 3.3-7.2 8.2-7.2Z"
+        fill="currentColor"
+      />
+      <ellipse cx="12" cy="12.8" rx="1.7" ry="1.3" fill="#d98b7e" />
+    </svg>
+  )
+}
 
 // ---------------- 顶部栏 ----------------
 export function TopBar({
@@ -18,14 +37,16 @@ export function TopBar({
       <div className="topbar__side">
         {onBack ? (
           <button className="icon-btn" onClick={onBack} aria-label="返回">
-            ‹
+            <ChevronLeft size={20} strokeWidth={1.75} />
           </button>
         ) : null}
       </div>
       {brand ? (
         <div className="brand" style={{ flex: 1 }}>
-          <div className="brand__logo">🐹</div>
-          <div className="brand__name">好命小猪</div>
+          <div className="brand__logo">
+            <BrandMark />
+          </div>
+          <div className="brand__name">好命小猪：荷兰猪社区</div>
         </div>
       ) : (
         <div className="topbar__title">{title}</div>
@@ -36,7 +57,13 @@ export function TopBar({
 }
 
 // ---------------- 空状态 ----------------
-export function Empty({ icon = '🐹', text = '这里还什么都没有' }: { icon?: string; text?: string }) {
+export function Empty({
+  icon = '🐹',
+  text = '这里还什么都没有',
+}: {
+  icon?: ReactNode
+  text?: string
+}) {
   return (
     <div className="empty">
       <div className="empty__icon">{icon}</div>

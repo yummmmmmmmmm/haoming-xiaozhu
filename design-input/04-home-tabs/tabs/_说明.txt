@@ -1,0 +1,8 @@
+【首页中部三个切换按钮（指南 / 论坛 / 商城） · 三个切换按钮图标（共 3 个）】
+
+当前样式：emoji（定义在 src/pages/HomePage.tsx 第 15 行的 TABS）
+代码位置：src/pages/HomePage.tsx 第 15 行
+建议尺寸：64 × 64 px；命名建议 tab-guide.png / tab-forum.png / tab-shop.png
+
+把要替换的图片放进本文件夹即可（文件名建议用英文小写，例如 home.png）。
+全部放好后通知我，我会接上资源管线、替换对应位置，并重新构建部署给你看。
