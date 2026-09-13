@@ -1,3 +1,10 @@
+import {
+  BookOpen,
+  HeartHandshake,
+  MessageCircle,
+  Share2,
+  Trash2,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Empty, Modal, TopBar } from '../components/ui'
@@ -6,6 +13,7 @@ import { CITY_OPTIONS, avatarImage } from '../data/seed'
 import { useApp } from '../store/AppContext'
 import type { Order, Photo, Post } from '../types'
 import { unreadCount } from '../utils/conversations'
+import { shareApp } from '../utils/share'
 
 interface GalleryItem {
   key: string
@@ -104,6 +112,14 @@ export default function AccountPage() {
     toast('本机数据已重置')
     logout()
     navigate('/login', { replace: true })
+  }
+
+  /** 分享 App：线上走系统分享面板，本地预览只复制并提示先部署 */
+  const onShare = async () => {
+    const result = await shareApp()
+    if (result === 'copied') toast('链接已复制，发给朋友就能打开')
+    else if (result === 'local') toast('这是本机预览地址，朋友打不开，部署后再分享')
+    else if (result === 'failed') toast('复制失败，请手动复制地址栏链接')
   }
 
   return (
@@ -244,7 +260,9 @@ export default function AccountPage() {
         </div>
         <div className="list">
           <div className="row" onClick={() => navigate('/guide')}>
-            <div className="row__thumb row__thumb--emoji">📖</div>
+            <div className="row__thumb row__thumb--icon">
+              <BookOpen size={20} strokeWidth={1.75} />
+            </div>
             <div className="row__body">
               <div className="row__title">饲养指南</div>
               <div className="row__sub">随时查阅饲养知识</div>
@@ -252,7 +270,9 @@ export default function AccountPage() {
             <span className="row__action">›</span>
           </div>
           <div className="row" onClick={() => navigate('/messages')}>
-            <div className="row__thumb row__thumb--emoji">💬</div>
+            <div className="row__thumb row__thumb--icon">
+              <MessageCircle size={20} strokeWidth={1.75} />
+            </div>
             <div className="row__body">
               <div className="row__title">我的私信</div>
               <div className="row__sub">
@@ -263,15 +283,29 @@ export default function AccountPage() {
             <span className="row__action">›</span>
           </div>
           <div className="row" onClick={() => navigate('/matches')}>
-            <div className="row__thumb row__thumb--emoji">💕</div>
+            <div className="row__thumb row__thumb--icon">
+              <HeartHandshake size={20} strokeWidth={1.75} />
+            </div>
             <div className="row__body">
               <div className="row__title">本地相猪</div>
               <div className="row__sub">看看同城猪友，给自家猪猪找对象</div>
             </div>
             <span className="row__action">›</span>
           </div>
+          <div className="row" onClick={onShare}>
+            <div className="row__thumb row__thumb--icon">
+              <Share2 size={20} strokeWidth={1.75} />
+            </div>
+            <div className="row__body">
+              <div className="row__title">分享给朋友</div>
+              <div className="row__sub">把「好命小猪」发给朋友，一起记录猪猪日常</div>
+            </div>
+            <span className="row__action">›</span>
+          </div>
           <div className="row" onClick={() => setResetOpen(true)}>
-            <div className="row__thumb row__thumb--emoji">🧹</div>
+            <div className="row__thumb row__thumb--icon row__thumb--danger">
+              <Trash2 size={20} strokeWidth={1.75} />
+            </div>
             <div className="row__body">
               <div className="row__title">重置本机数据</div>
               <div className="row__sub">清空账号、记录、订单等全部本地数据</div>

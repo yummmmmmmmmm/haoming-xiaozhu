@@ -1137,6 +1137,20 @@ textarea.input {
   background: rgba(255, 255, 255, 0.58);
 }
 
+/* 线性图标版本：同一个底色方块，只是把 emoji 换成 lucide 描边图标 */
+.row__thumb--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--accent);
+}
+
+/* 危险操作（重置数据等）用告警色，和主色拉开 */
+.row__thumb--danger {
+  color: var(--red);
+}
+
 .row__body {
   flex: 1;
   min-width: 0;
